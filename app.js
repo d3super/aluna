@@ -65,7 +65,7 @@ const notice = (ok, title, msg, fn) => modal({ tone: ok ? 'ok' : 'bad', title, b
 function drawTop() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   const top = $('#top'); top.replaceChildren(
-    h('img', { src: 'icons/logo.png', alt: '' }),
+    h('img', { src: LOGO, alt: '' }),
     h('div', { class: 't' }, h('b', {}, 'ALUNA'), h('small', {}, 'Ruang Aman Untuk Setiap Suara')),
     h('button', { class: 'icon-btn', 'aria-label': dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap', onclick: toggleTheme }, ic(dark ? 'sun' : 'moon')),
     h('a', { class: 'icon-btn', href: '#/tentang', 'aria-label': 'Tentang ALUNA' }, ic('info')));
@@ -110,7 +110,7 @@ function vHome(v) {
     h('section', { class: 'hero' }, h('h2', {}, 'Suaramu penting. Identitasmu tetap aman.'),
       h('p', {}, 'Sampaikan saran, kritik, atau pengaduan tanpa nama, tanpa akun.'),
       h('div', { class: 'row' }, h('a', { class: 'btn gold', href: '#/kirim' }, ic('plus'), 'Kirim Aspirasi'), h('a', { class: 'btn line', href: '#/lacak' }, 'Lacak laporan')),
-      h('img', { src: 'icons/logo.png', alt: '' })),
+      h('img', { src: LOGO, alt: '' })),
     statBox,
     h('section', {}, h('div', { class: 'row between', style: null }, h('h2', {}, 'Kegiatan terkini'), h('a', { href: '#/respons', class: 'muted' }, 'Lihat respons')), kegBox),
     h('section', { class: 'card stack' }, h('h2', {}, 'Cara kerja'),
@@ -265,7 +265,7 @@ function vResp(v) {
 /* ---------- tentang ---------- */
 function vAbout(v) {
   const s = (t, ...c) => h('section', { class: 'card stack' }, h('h3', {}, t), c);
-  v.append(h('div', { class: 'stack' }, h('div', { class: 'card row' }, h('img', { src: 'icons/logo.png', alt: '', width: 64, height: 64 }), h('div', {}, h('h2', {}, 'ALUNA'), h('p', { class: 'muted' }, 'Aspirasi, Layanan, Ungkapan, dan Nyata'), h('small', { class: 'muted' }, 'SMP Negeri 1 Kota Bandar Lampung'))),
+  v.append(h('div', { class: 'stack' }, h('div', { class: 'card row' }, h('img', { src: LOGO, alt: '', width: 64, height: 64 }), h('div', {}, h('h2', {}, 'ALUNA'), h('p', { class: 'muted' }, 'Aspirasi, Layanan, Ungkapan, dan Nyata'), h('small', { class: 'muted' }, 'SMP Negeri 1 Kota Bandar Lampung'))),
     s('Untuk apa ALUNA?', h('p', {}, 'Tempat aman bagi siswa menyampaikan saran, kritik, dan pengaduan, lalu melihat apa tindak lanjut sekolah.')),
     s('Anonim, tapi jujur soal batasnya', h('p', {}, 'ALUNA tidak meminta nama, kelas, NIS, nomor telepon, atau email, dan tidak membuat akun siswa. Namun anonimitas ini berlaku di tingkat aplikasi; ia bukan jaminan mutlak terhadap penyedia hosting atau operator jaringan. Jangan menulis identitasmu di dalam laporan.')),
     s('Laporan sensitif', h('p', {}, 'Laporan tentang perundungan, kekerasan, pelecehan, atau ancaman hanya dibaca petugas berwenang (misalnya Guru BK atau Pembina) yang ditugaskan.')),

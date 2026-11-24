@@ -39,11 +39,12 @@ svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;str
 .between{justify-content:space-between}
 /* hero */
 .hero{position:relative;overflow:hidden;border-radius:26px;padding:22px 20px;color:#fff;background:linear-gradient(140deg,#123B4A 0%,#1b5a66 55%,#2DA69A 130%);border:1px solid rgba(255,255,255,.18);box-shadow:0 18px 40px -22px rgba(18,59,74,.7)}
-.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.07);backdrop-filter:blur(4px)}
-.hero img{position:absolute;right:14px;bottom:10px;width:92px;opacity:.9;z-index:1}
-.hero h2{font-size:24px;font-weight:800;max-width:15ch}
+.hero::after{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.06);z-index:0;pointer-events:none}
+.hero img{position:absolute;right:16px;top:18px;width:62px;height:62px;z-index:1;opacity:.95}
+.hero h2{font-size:24px;font-weight:800;max-width:calc(100% - 78px)}
 .hero p{opacity:.88;margin:8px 0 16px;max-width:30ch;font-size:14px}
-.hero .row{position:relative;z-index:2;flex-wrap:wrap}
+.hero>*{position:relative;z-index:1}
+.hero .row{flex-wrap:wrap}
 .btn{border:0;border-radius:16px;padding:14px 20px;min-height:50px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:transform .12s}
 .btn:active{transform:scale(.97)}
 .btn.gold{background:var(--gold);color:#123B4A}

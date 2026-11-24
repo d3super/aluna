@@ -1,5 +1,5 @@
-const V = 'aluna-v1';
-const ASSETS = ['./', 'index.html', 'app.css', 'app.js', 'config.js', 'theme.js', 'manifest.webmanifest', 'icons/logo.png', 'icons/favicon.png'];
+const V = 'aluna-v2';
+const ASSETS = ['./', 'index.html', 'app.css', 'app.js', 'config.js', 'theme.js', 'logo.js', 'manifest.webmanifest', 'icons/logo.png', 'icons/favicon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
