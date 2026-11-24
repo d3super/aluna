@@ -6,6 +6,7 @@ const LS = {
   del(k) { try { localStorage.removeItem(k); } catch (e) {} }
 };
 const state = { meta: LS.get('aluna_meta', null), route: 'beranda', last: 'beranda', installEvt: null };
+if (state.meta && !(state.meta.kategori || []).length) { state.meta = null; LS.del('aluna_meta'); }
 
 function h(tag, a, ...kids) {
   const e = document.createElement(tag);
@@ -140,7 +141,15 @@ function installCard() {
 
 /* ---------- kirim aspirasi ---------- */
 function openSend() {
-  const m = state.meta; if (!m) { api('meta').then(x => { state.meta = x; LS.set('aluna_meta', x); openSend(); }).catch(e => { notice(false, 'Belum bisa dimuat', e.message, () => { location.hash = '#/' + state.last; }); }); return; }
+  const m = state.meta;
+  if (!m || !m.kategori.length) {
+    const back = () => { location.hash = '#/' + state.last; };
+    api('meta').then(x => {
+      state.meta = x;
+      if (x.kategori.length) { LS.set('aluna_meta', x); openSend(); } else notice(false, 'Kategori belum tersedia', 'Daftar kategori di server masih kosong. Minta admin menjalankan setup ulang di Apps Script.', back);
+    }).catch(e => notice(false, 'Belum bisa dimuat', e.message, back));
+    return;
+  }
   const dr = LS.get('aluna_draft', {}); let jenis = dr.jenis || 'Saran';
   const segs = m.jenis.map(j => h('button', { type: 'button', 'aria-pressed': String(j === jenis), onclick: () => { jenis = j; segs.forEach(b => b.setAttribute('aria-pressed', String(b.textContent === j))); save(); } }, j));
   const kat = h('select', { class: 'in', id: 'kat', onchange: save }, h('option', { value: '' }, 'Pilih kategori'), m.kategori.map(k => h('option', { value: k.id }, k.nama)));
@@ -270,7 +279,7 @@ function vAbout(v) {
     s('Laporan sensitif', h('p', {}, 'Laporan tentang perundungan, kekerasan, pelecehan, atau ancaman hanya dibaca petugas berwenang (misalnya Guru BK atau Pembina) yang ditugaskan.')),
     s('Kode rahasia', h('p', {}, 'Kode hanya disimpan dalam bentuk terenkripsi di server, sehingga tidak bisa dipulihkan jika hilang. Simpan baik-baik.')),
     s('Tampilan', h('button', { class: 'btn ghost', onclick: toggleTheme }, ic('moon'), 'Ganti mode gelap / terang')),
-    h('p', { class: 'muted', style: null }, 'Copyright@2026 ALUNA')));
+    h('p', { class: 'muted' }, 'Copyright@2026 ALUNA - Versi 5')));
 }
 
 /* ---------- start ---------- */
@@ -279,7 +288,7 @@ window.addEventListener('hashchange', route);
 async function boot() {
   drawTop(); drawNav();
   const t0 = Date.now();
-  try { const m = await api('meta'); state.meta = m; LS.set('aluna_meta', m); } catch (e) { /* tetap jalan dengan meta tersimpan */ }
+  try { const m = await api('meta'); state.meta = m; if (m.kategori.length) LS.set('aluna_meta', m); } catch (e) { /* tetap jalan dengan meta tersimpan */ }
   setTimeout(() => { $('#splash').classList.add('out'); route(); }, Math.max(0, 1300 - (Date.now() - t0)));
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
