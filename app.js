@@ -85,6 +85,13 @@ function drawNav() {
 }
 function skeleton() { return h('div', { class: 'stack' }, h('div', { class: 'skel' }), h('div', { class: 'skel' }), h('div', { class: 'skel' })); }
 function retry(msg, fn) { return h('div', { class: 'card empty' }, h('p', {}, msg), h('button', { class: 'btn ghost', onclick: fn }, 'Coba lagi')); }
+// Stale-while-revalidate: tampilkan data tersimpan seketika, lalu segarkan dari server
+function swrInto(box, key, fn, build) {
+  const cached = LS.get('aluna_c_' + key, null);
+  if (cached) { try { box.replaceChildren(build(cached)); } catch (e) { box.replaceChildren(skeleton()); } } else box.replaceChildren(skeleton());
+  return fn().then(r => { LS.set('aluna_c_' + key, r); if (document.body.contains(box)) box.replaceChildren(build(r)); })
+    .catch(e => { if (!cached && document.body.contains(box)) box.replaceChildren(retry(e.message, () => swrInto(box, key, fn, build))); });
+}
 async function loadInto(box, fn, build) {
   box.replaceChildren(skeleton());
   try { box.replaceChildren(build(await fn())); } catch (e) { box.replaceChildren(retry(e.message, () => loadInto(box, fn, build))); }
@@ -119,15 +126,13 @@ function vHome(v) {
         h('li', {}, h('div', {}, h('b', {}, 'Simpan kode rahasia'), h('p', { class: 'muted' }, 'Kamu mendapat nomor referensi dan kode. Kode hanya muncul sekali.'))),
         h('li', {}, h('div', {}, h('b', {}, 'Pantau tindak lanjut'), h('p', { class: 'muted' }, 'Lihat status dan respons sekolah kapan saja lewat menu Lacak.'))))),
     installCard()));
-  loadInto(statBox, () => api('stats', { ta: activeTa() }), s => {
-    const c = (n, l) => h('div', { class: 'card stat' }, h('b', {}, n), h('span', {}, l));
-    return h('div', { class: 'stats' }, c(s.total, 'Aspirasi'), c(s.persenRespons + '%', 'Direspon'), c(s.selesai, 'Selesai'));
-  }).then(() => { const st = statBox.firstChild; if (st && st.className === 'stats') statBox.replaceWith(st); });
-  loadInto(kegBox, () => api('kegiatan'), k => {
-    if (!k.daftar.length) return h('div', { class: 'card muted' }, 'Belum ada informasi kegiatan.');
-    return h('div', { class: 'car' }, k.daftar.map(g => h('article', { class: 'card' }, h('span', { class: 'tag gold' }, fmt(g.tanggal) || 'Info'), h('h3', {}, g.judul), h('p', { class: 'muted' }, g.ringkasan),
-      /^https?:\/\//i.test(g.tautan) ? h('a', { href: g.tautan, target: '_blank', rel: 'noopener noreferrer', class: 'tag' }, 'Buka tautan') : null)));
-  });
+  const b = state.boot;
+  if (!b) { statBox.replaceChildren(skeleton()); kegBox.replaceChildren(skeleton()); return; }
+  const s = b.stats, c = (n, l) => h('div', { class: 'card stat' }, h('b', {}, n), h('span', {}, l));
+  statBox.replaceWith(h('div', { class: 'stats' }, c(s.total, 'Aspirasi'), c(s.persenRespons + '%', 'Direspon'), c(s.selesai, 'Selesai')));
+  kegBox.replaceChildren(!b.kegiatan.length ? h('div', { class: 'card muted' }, 'Belum ada informasi kegiatan.') :
+    h('div', { class: 'car' }, b.kegiatan.map(g => h('article', { class: 'card' }, h('span', { class: 'tag gold' }, fmt(g.tanggal) || 'Info'), h('h3', {}, g.judul), h('p', { class: 'muted' }, g.ringkasan),
+      /^https?:\/\//i.test(g.tautan) ? h('a', { href: g.tautan, target: '_blank', rel: 'noopener noreferrer', class: 'tag' }, 'Buka tautan') : null))));
 }
 function activeTa() { const t = state.meta && state.meta.tahunAjaran.filter(x => x.aktif)[0]; return t ? t.id : 'all'; }
 function installCard() {
@@ -245,7 +250,7 @@ function vDash(v) {
   sel.value = ta;
   const mi = h('input', { class: 'in', type: 'month', 'aria-label': 'Filter bulan', onchange: e => { bulan = e.target.value; load(); } });
   v.append(h('div', { class: 'stack' }, h('h2', {}, 'Dashboard aspirasi'), h('div', { class: 'grid2' }, sel, mi), box));
-  const load = () => loadInto(box, () => api('stats', { ta, bulan }), s => {
+  const load = () => swrInto(box, 'stats_' + ta + '_' + bulan, () => api('stats', { ta, bulan }), s => {
     const c = (n, l) => h('div', { class: 'card stat' }, h('b', {}, n), h('span', {}, l));
     const ring = h('div', { class: 'ring' }, h('span', {}, s.persenRespons + '%')); ring.style.setProperty('--p', s.persenRespons);
     return h('div', { class: 'stack' }, h('div', { class: 'card row' }, ring, h('div', {}, h('h3', {}, 'Persentase respons'), h('p', { class: 'muted' }, s.sudahDirespon + ' dari ' + s.total + ' aspirasi sudah mendapat respons publik.'))),
@@ -266,7 +271,7 @@ function colCard(t, o, lf) {
 /* ---------- respons sekolah ---------- */
 function vResp(v) {
   const box = h('div'); v.append(h('div', { class: 'stack' }, h('h2', {}, 'Respons sekolah'), h('p', { class: 'muted' }, 'Respons resmi yang sudah disetujui. Isi laporan pribadi tidak ditampilkan.'), box));
-  loadInto(box, () => api('responses'), r => !r.daftar.length ? h('div', { class: 'card empty muted' }, 'Belum ada respons publik. Kirim aspirasi pertamamu.') :
+  swrInto(box, 'responses', () => api('responses'), r => !r.daftar.length ? h('div', { class: 'card empty muted' }, 'Belum ada respons publik. Kirim aspirasi pertamamu.') :
     h('div', { class: 'stack' }, r.daftar.map(x => h('article', { class: 'card stack' }, h('div', { class: 'row between' }, h('span', { class: 'tag' }, x.jenis + ' - ' + x.kategori), h('span', { class: 'badge ' + x.status }, x.status)), h('p', {}, x.isi), h('small', { class: 'muted' }, fmt(x.waktu))))));
 }
 
@@ -285,11 +290,21 @@ function vAbout(v) {
 /* ---------- start ---------- */
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); state.installEvt = e; });
 window.addEventListener('hashchange', route);
+async function refreshBoot() {
+  try {
+    const b = await api('bootstrap', {}), changed = JSON.stringify(b) !== JSON.stringify(state.boot);
+    state.boot = b; state.meta = b.meta;
+    if (b.meta.kategori.length) { LS.set('aluna_boot', b); LS.set('aluna_meta', b.meta); }
+    if (changed && state.route === 'beranda' && !$('.sheet') && !document.querySelector('.modal-ov')) route();
+  } catch (e) { /* tetap memakai data tersimpan */ }
+}
 async function boot() {
   drawTop(); drawNav();
-  const t0 = Date.now();
-  try { const m = await api('meta'); state.meta = m; if (m.kategori.length) LS.set('aluna_meta', m); } catch (e) { /* tetap jalan dengan meta tersimpan */ }
-  setTimeout(() => { $('#splash').classList.add('out'); route(); }, Math.max(0, 1300 - (Date.now() - t0)));
+  const cached = LS.get('aluna_boot', null);
+  if (cached && cached.meta && cached.meta.kategori && cached.meta.kategori.length) { state.boot = cached; state.meta = cached.meta; }
+  const t0 = Date.now(), fresh = refreshBoot();
+  if (!state.boot) await Promise.race([fresh, new Promise(r => setTimeout(r, 4500))]);   // kunjungan pertama: tunggu data, maksimal 4,5 detik
+  setTimeout(() => { $('#splash').classList.add('out'); route(); }, Math.max(0, (state.boot ? 650 : 900) - (Date.now() - t0)));
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot();
