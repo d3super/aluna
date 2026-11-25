@@ -1,5 +1,5 @@
 'use strict';
-/* ALUNA PWA siswa. Semua teks dari server dirender lewat textContent (anti-XSS). */
+/* VoiceUp PWA siswa. Semua teks dari server dirender lewat textContent (anti-XSS). */
 const LS = {
   get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v === null || v === undefined ? d : v; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -67,9 +67,9 @@ function drawTop() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   const top = $('#top'); top.replaceChildren(
     h('img', { src: LOGO, alt: '' }),
-    h('div', { class: 't' }, h('b', {}, 'ALUNA'), h('small', {}, 'Ruang Aman Untuk Setiap Suara')),
+    h('div', { class: 't' }, h('b', {}, 'VoiceUp'), h('small', {}, 'Ruang Aman Untuk Setiap Suara')),
     h('button', { class: 'icon-btn', 'aria-label': dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap', onclick: toggleTheme }, ic(dark ? 'sun' : 'moon')),
-    h('a', { class: 'icon-btn', href: '#/tentang', 'aria-label': 'Tentang ALUNA' }, ic('info')));
+    h('a', { class: 'icon-btn', href: '#/tentang', 'aria-label': 'Tentang VoiceUp' }, ic('info')));
 }
 function $(s) { return document.querySelector(s); }
 function toggleTheme() {
@@ -138,7 +138,7 @@ function activeTa() { const t = state.meta && state.meta.tahunAjaran.filter(x =>
 function installCard() {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (standalone) return null;
-  const c = h('section', { class: 'card row' }, ic('plus'), h('div', { style: null }, h('b', {}, 'Pasang ALUNA di layar utama'),
+  const c = h('section', { class: 'card row' }, ic('plus'), h('div', { style: null }, h('b', {}, 'Pasang VoiceUp di layar utama'),
     h('p', { class: 'muted' }, ios ? 'Di Safari: ketuk Bagikan, lalu "Tambah ke Layar Utama".' : 'Buka lebih cepat seperti aplikasi biasa.')));
   if (!ios) c.append(h('button', { class: 'btn teal', onclick: async () => { if (state.installEvt) { state.installEvt.prompt(); state.installEvt = null; } else notice(true, 'Pasang manual', 'Buka menu browser (titik tiga), lalu pilih "Install aplikasi" atau "Tambahkan ke layar utama".'); } }, 'Pasang'));
   return c;
@@ -207,7 +207,7 @@ function successModal(r, judul) {
 
 /* ---------- lacak ---------- */
 function vTrack(v) {
-  const ref = h('input', { class: 'in', placeholder: 'ALN-2611-XXXXX', autocapitalize: 'characters', autocomplete: 'off' });
+  const ref = h('input', { class: 'in', placeholder: 'VUP-2611-XXXXX', autocapitalize: 'characters', autocomplete: 'off' });
   const kode = h('input', { class: 'in', placeholder: 'Kode rahasia 8 karakter', autocapitalize: 'characters', autocomplete: 'off', type: 'password' });
   const out = h('div'), saved = h('div');
   const cek = async (r, k) => {
@@ -278,13 +278,13 @@ function vResp(v) {
 /* ---------- tentang ---------- */
 function vAbout(v) {
   const s = (t, ...c) => h('section', { class: 'card stack' }, h('h3', {}, t), c);
-  v.append(h('div', { class: 'stack' }, h('div', { class: 'card row' }, h('img', { src: LOGO, alt: '', width: 64, height: 64 }), h('div', {}, h('h2', {}, 'ALUNA'), h('p', { class: 'muted' }, 'Aspirasi, Layanan, Ungkapan, dan Nyata'), h('small', { class: 'muted' }, 'SMP Negeri 1 Kota Bandar Lampung'))),
-    s('Untuk apa ALUNA?', h('p', {}, 'Tempat aman bagi siswa menyampaikan saran, kritik, dan pengaduan, lalu melihat apa tindak lanjut sekolah.')),
-    s('Anonim, tapi jujur soal batasnya', h('p', {}, 'ALUNA tidak meminta nama, kelas, NIS, nomor telepon, atau email, dan tidak membuat akun siswa. Namun anonimitas ini berlaku di tingkat aplikasi; ia bukan jaminan mutlak terhadap penyedia hosting atau operator jaringan. Jangan menulis identitasmu di dalam laporan.')),
+  v.append(h('div', { class: 'stack' }, h('div', { class: 'card row' }, h('img', { src: LOGO, alt: '', width: 64, height: 64 }), h('div', {}, h('h2', {}, 'VoiceUp'), h('p', { class: 'muted' }, 'Ruang Aman Untuk Setiap Suara'), h('small', { class: 'muted' }, 'SMP Negeri 1 Kota Bandar Lampung'))),
+    s('Untuk apa VoiceUp?', h('p', {}, 'Tempat aman bagi siswa menyampaikan saran, kritik, dan pengaduan, lalu melihat apa tindak lanjut sekolah.')),
+    s('Anonim, tapi jujur soal batasnya', h('p', {}, 'VoiceUp tidak meminta nama, kelas, NIS, nomor telepon, atau email, dan tidak membuat akun siswa. Namun anonimitas ini berlaku di tingkat aplikasi; ia bukan jaminan mutlak terhadap penyedia hosting atau operator jaringan. Jangan menulis identitasmu di dalam laporan.')),
     s('Laporan sensitif', h('p', {}, 'Laporan tentang perundungan, kekerasan, pelecehan, atau ancaman hanya dibaca petugas berwenang (misalnya Guru BK atau Pembina) yang ditugaskan.')),
     s('Kode rahasia', h('p', {}, 'Kode hanya disimpan dalam bentuk terenkripsi di server, sehingga tidak bisa dipulihkan jika hilang. Simpan baik-baik.')),
     s('Tampilan', h('button', { class: 'btn ghost', onclick: toggleTheme }, ic('moon'), 'Ganti mode gelap / terang')),
-    h('p', { class: 'muted' }, 'Copyright@2026 ALUNA - Versi 5')));
+    h('p', { class: 'muted' }, 'Copyright@2026 VoiceUp - Versi 7')));
 }
 
 /* ---------- start ---------- */

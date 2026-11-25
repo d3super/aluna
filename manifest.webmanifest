@@ -1,6 +1,6 @@
 {
-  "name": "ALUNA - Ruang Aman Untuk Setiap Suara",
-  "short_name": "ALUNA",
+  "name": "VoiceUp - Ruang Aman Untuk Setiap Suara",
+  "short_name": "VoiceUp",
   "description": "Aspirasi, saran, kritik, dan pengaduan siswa secara anonim.",
   "lang": "id",
   "start_url": "./index.html",
