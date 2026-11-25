@@ -1,4 +1,4 @@
-const V = 'voiceup-v7';
+const V = 'voiceup-v10';
 const ASSETS = ['./', 'index.html', 'app.css', 'app.js', 'config.js', 'theme.js', 'logo.js', 'manifest.webmanifest', 'icons/logo.png', 'icons/favicon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => Promise.all(ASSETS.map(a => fetch(a, { cache: 'no-store' }).then(r => r.ok && c.put(a, r)).catch(() => {})))).then(() => self.skipWaiting()));

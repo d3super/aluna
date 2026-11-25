@@ -119,7 +119,7 @@ function vHome(v) {
       h('p', {}, 'Sampaikan saran, kritik, atau pengaduan tanpa nama, tanpa akun.'),
       h('div', { class: 'row' }, h('a', { class: 'btn gold', href: '#/kirim' }, ic('plus'), 'Kirim Aspirasi'), h('a', { class: 'btn line', href: '#/lacak' }, 'Lacak laporan'))),
     statBox,
-    h('section', {}, h('div', { class: 'row between', style: null }, h('h2', {}, 'Kegiatan terkini'), h('a', { href: '#/respons', class: 'muted' }, 'Lihat respons')), kegBox),
+    h('section', {}, h('h2', {}, 'Kegiatan terkini'), kegBox),
     h('section', { class: 'card stack' }, h('h2', {}, 'Cara kerja'),
       h('ol', { class: 'steps' },
         h('li', {}, h('div', {}, h('b', {}, 'Tulis aspirasi'), h('p', { class: 'muted' }, 'Pilih jenis dan kategori, lalu ceritakan tanpa menyebut identitas.'))),
@@ -130,9 +130,20 @@ function vHome(v) {
   if (!b) { statBox.replaceChildren(skeleton()); kegBox.replaceChildren(skeleton()); return; }
   const s = b.stats, c = (n, l) => h('div', { class: 'card stat' }, h('b', {}, n), h('span', {}, l));
   statBox.replaceWith(h('div', { class: 'stats' }, c(s.total, 'Aspirasi'), c(s.persenRespons + '%', 'Direspon'), c(s.selesai, 'Selesai')));
-  kegBox.replaceChildren(!b.kegiatan.length ? h('div', { class: 'card muted' }, 'Belum ada informasi kegiatan.') :
-    h('div', { class: 'car' }, b.kegiatan.map(g => h('article', { class: 'card' }, h('span', { class: 'tag gold' }, fmt(g.tanggal) || 'Info'), h('h3', {}, g.judul), h('p', { class: 'muted' }, g.ringkasan),
+  const kg = upcoming(b.kegiatan);
+  kegBox.replaceChildren(!kg.length ? h('div', { class: 'card muted' }, 'Tidak ada kegiatan dalam 3 hari ke depan.') :
+    h('div', { class: 'car' }, kg.map(g => h('article', { class: 'card' }, h('span', { class: 'tag gold' }, dayLabel(g.tanggal) + ' - ' + fmt(g.tanggal)), h('h3', {}, g.judul), h('p', { class: 'muted' }, g.ringkasan),
       /^https?:\/\//i.test(g.tautan) ? h('a', { href: g.tautan, target: '_blank', rel: 'noopener noreferrer', class: 'tag' }, 'Buka tautan') : null))));
+}
+/* Kegiatan: hanya tampil dari H-3 sampai hari-H; hilang setelah tanggalnya lewat (memakai tanggal di perangkat) */
+function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function upcoming(list) {
+  const t0 = new Date(), today = ymd(t0), end = ymd(new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + 3));
+  return (list || []).filter(g => /^\d{4}-\d{2}-\d{2}$/.test(g.tanggal || '') && g.tanggal >= today && g.tanggal <= end).sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+}
+function dayLabel(t) {
+  const n = new Date(), d = t.split('-'), diff = Math.round((new Date(d[0], d[1] - 1, d[2]) - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000);
+  return diff === 0 ? 'Hari ini' : diff === 1 ? 'Besok' : diff === 2 ? '2 hari lagi' : fmt(t);
 }
 function activeTa() { const t = state.meta && state.meta.tahunAjaran.filter(x => x.aktif)[0]; return t ? t.id : 'all'; }
 function installCard() {
@@ -284,7 +295,7 @@ function vAbout(v) {
     s('Laporan sensitif', h('p', {}, 'Laporan tentang perundungan, kekerasan, pelecehan, atau ancaman hanya dibaca petugas berwenang (misalnya Guru BK atau Pembina) yang ditugaskan.')),
     s('Kode rahasia', h('p', {}, 'Kode hanya disimpan dalam bentuk terenkripsi di server, sehingga tidak bisa dipulihkan jika hilang. Simpan baik-baik.')),
     s('Tampilan', h('button', { class: 'btn ghost', onclick: toggleTheme }, ic('moon'), 'Ganti mode gelap / terang')),
-    h('p', { class: 'muted' }, 'Copyright@2026 VoiceUp - Versi 7')));
+    h('p', { class: 'muted' }, 'Copyright@2026 VoiceUp - Versi 10')));
 }
 
 /* ---------- start ---------- */
